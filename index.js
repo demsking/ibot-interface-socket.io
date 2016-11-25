@@ -29,6 +29,10 @@ const read = (socket, format) => new Promise((resolve, reject) => {
     }
     
     socket.once('data', (data) => {
+        if (!data) {
+            return reject(data)
+        }
+        
         data = data.toString().trim()
         
         if (data === STR_CLOSE) {
@@ -50,7 +54,7 @@ const configure = (socket) => {
     
     socket.on('end', () => console.log('socket closed'))
     socket.on('timeout', close_socket(socket))
-    socket.setTimeout(socket_timeout)
+//     socket.setTimeout(socket_timeout)
     
     socket.ask = (question, format = /.+/) => new Promise((resolve, reject) => {
         socket.write(question)

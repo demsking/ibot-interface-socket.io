@@ -1,6 +1,7 @@
 'use strict'
 
-const net = require('net')
+const http = require('http')
+const SocketIO = require('socket.io')
 
 const STR_CLOSE = '__CLOSE__'
 const SOCKET_TIMEOUT = 60 * 1000 * 10 // 10 min
@@ -21,12 +22,6 @@ const close_socket = (socket) => () => {
 
 console.log(`Client should send ${STR_CLOSE} to close his connection`)
 console.log('Press Ctrl+C to exit\n')
-
-
-
-
-const app = require('http').createServer()
-const io = require('socket.io')(app)
 
 const read = (socket, format) => new Promise((resolve, reject) => {
     if (!format) {
@@ -74,11 +69,12 @@ const configure = (socket) => {
 }
 
 let server_port = 9911
+let server_handler = null
 
 const self = {
     configure: (options) => new Promise((resolve) => {
         server_port = options.port || server_port
-        server_name = options.host || server_name
+        server_handler = options.handle || server_handler
         socket_timeout = options.socketTimeout || socket_timeout
         
         resolve()
@@ -88,36 +84,36 @@ const self = {
             return reject(new Error('The server is already open'))
         }
         
-        app.listen(server_port)
+        server = http.createServer(server_handler)
+        
+        const io = SocketIO(server)
+        
+        server.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.log('Address in use, retrying...')
+                
+                return setTimeout(() => {
+                    server.close()
+                    server.listen(server_port)
+                }, 1000)
+            }
+            
+            reject(err)
+        })
+        
+        server.on('connect', () => {
+            process.on('SIGINT', self.close)
+        })
+        
+        server.listen(server_port, () => {
+            console.log('opened server on', server.address())
+        })
         
         io.on('connection', (socket) => {
+            console.log('new user')
             configure(socket)
             resolve(socket)
         })
-        
-//         server = net.createServer((socket) => {
-//             configure(socket)
-//             resolve(socket)
-//         }).on('error', (err) => {
-//             if (err.code === 'EADDRINUSE') {
-//                 console.log('Address in use, retrying...')
-//                 
-//                 return setTimeout(() => {
-//                     server.close()
-//                     server.listen(server_port, server_name)
-//                 }, 1000)
-//             }
-//             
-//             reject(err)
-//         })
-//         
-//         server.on('connect', () => {
-//             process.on('SIGINT', self.close)
-//         })
-//         
-//         server.listen(server_port, server_name, () => {
-//             console.log('opened server on', server.address())
-//         })
     }),
     close: () => new Promise((resolve, reject) => {
         server.close((err) => {

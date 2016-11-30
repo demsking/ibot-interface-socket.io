@@ -1,11 +1,11 @@
-# bot-interface-socket.io
+# ibot-interface-socket.io
 
 A socket interface for your bot (ibot)
 
 ## Install
 
 ```sh
-npm install --save bot-interface-socket.io
+npm install --save ibot-interface-socket.io
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install --save bot-interface-socket.io
 ```js
 // server.js
 
-const iSocketIO = require('bot-interface-socket.io')
+const iSocketIO = require('ibot-interface-socket.io')
 const bot = require('./lib/your-ibot')
 
 bot.configure({
@@ -43,4 +43,4 @@ bot.run()
 
 ## License
 
-Under the MIT license. See [LICENSE](https://github.com/demsking/bot-interface-socket.io/blob/master/LICENSE) file for more details.
+Under the MIT license. See [LICENSE](https://github.com/demsking/ibot-interface-socket.io/blob/master/LICENSE) file for more details.

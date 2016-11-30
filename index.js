@@ -17,7 +17,7 @@ const call_handle_before_end = () => {
 }
 const close_socket = (socket) => () => {
     call_handle_before_end()
-    setTimeout(() => socket.end(), 1000)
+    setTimeout(() => socket.disconnect(0), 1000)
 }
 
 console.log(`Client should send ${STR_CLOSE} to close his connection`)
@@ -50,7 +50,12 @@ const read = (socket, format) => new Promise((resolve, reject) => {
 const configure = (socket) => {
     process.on('SIGINT', close_socket(socket))
     
-    socket.println = (text) => socket.emit('message', text + '\r\n')
+//     socket.println = (text) => socket.emit('message', text + '\r\n')
+    socket.println = (text) => {
+        console.log('>>>', text)
+        
+        socket.emit('message', text + '\r\n')
+    }
     
     socket.on('end', () => console.log('socket closed'))
     socket.on('timeout', close_socket(socket))
@@ -70,6 +75,10 @@ const configure = (socket) => {
                 break
         }
     }
+    
+    socket.interface = {
+        close: self.close
+    }
 }
 
 let server_port = 9911
@@ -83,7 +92,7 @@ const self = {
         
         resolve()
     }),
-    open: () => new Promise((resolve, reject) => {
+    open: (start) => new Promise((resolve, reject) => {
         if (server) {
             return reject(new Error('The server is already open'))
         }
@@ -116,7 +125,8 @@ const self = {
         io.on('connection', (socket) => {
             console.log('new user')
             configure(socket)
-            resolve(socket)
+            resolve()
+            start(socket)
         })
     }),
     close: () => new Promise((resolve, reject) => {

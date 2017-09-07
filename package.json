@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/test.js",
-    "coverage": "istanbul cover _mocha -- test/test.js -R spec"
+    "coverage": "istanbul cover _mocha -- test/test.js -R spec",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,8 @@
   },
   "homepage": "https://github.com/demsking/ibot-interface-socket.io#readme",
   "dependencies": {
-    "socket.io": "^1.6.0"
-  }
+    "socket.io": "^2.0.2",
+    "snyk": "^1.40.2"
+  },
+  "snyk": true
 }
